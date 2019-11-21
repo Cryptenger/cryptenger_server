@@ -44,6 +44,6 @@ while serveur_lance: #Boucle principale
 
 print("Fermeture de la connexion")
 for client in clients_connectes:
-    client.close()
+    client.close()  
 
 connexion_principale.close()
