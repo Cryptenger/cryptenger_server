@@ -37,8 +37,11 @@ while serveur_lance: #Boucle principale
             msg_recu = client.recv(1024)
             # Peut planter si le message contient des caractères spéciaux
             msg_recu = msg_recu.decode()
-            print("Reçu {}".format(msg_recu))
-            client.send(b"5 / 5")
+            print("Reçu ",msg_recu)
+            for receveur in clients_connectes:
+                if receveur != client:
+                    receveur.send(msg_recu.encode())
+
             if msg_recu == "fin":
                 serveur_lance = False
 
