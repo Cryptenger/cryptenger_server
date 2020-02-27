@@ -26,24 +26,33 @@ while serveur_lance: #Boucle principale
         clients_connectes.append(connexion_avec_client)
     
     clients_a_lire = []
+    wlist = 0
+    xlist = 0
     
     try:
         clients_a_lire, wlist, xlist = select.select(clients_connectes, [], [], 0.05)
     except select.error:
         pass
     else:
+        
         for client in clients_a_lire:
-            # Client est de type socket
-            msg_recu = client.recv(1024)
-            # Peut planter si le message contient des caractères spéciaux
-            msg_recu = msg_recu.decode()
-            print("Reçu ",msg_recu)
-            for receveur in clients_connectes:
-                if receveur != client:
-                    receveur.send(msg_recu.encode())
+            try:
+                # Client est de type socket
+                msg_recu = client.recv(1024)
+            except:
+                clients_connectes.remove(client)
+                client.close()
+            else:
+                # Peut planter si le message contient des caractères spéciaux
+                msg_recu = msg_recu.decode()
+                print("Reçu ",msg_recu)
+                for receveur in clients_connectes:
+                    if receveur != client:
+                        receveur.send(msg_recu.encode())
 
-            if msg_recu == "fin":
-                serveur_lance = False
+                if msg_recu == "fin":
+                    clients_connectes.remove(client)
+                    client.close()
 
 print("Fermeture de la connexion")
 for client in clients_connectes:
