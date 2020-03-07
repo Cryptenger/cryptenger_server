@@ -15,6 +15,7 @@ print("Le serveur écoute sur le port", port)
 
 serveur_lance = True
 clients_connectes = []
+utilisateurs = []
 
 while serveur_lance: #Boucle principale
 
@@ -24,6 +25,7 @@ while serveur_lance: #Boucle principale
     for connexion in connexions_demandees:
         connexion_avec_client, infos_connexion = connexion_principale.accept()
         clients_connectes.append(connexion_avec_client)
+        utilisateurs.append([infos_connexion[0], connexion_avec_client])
     
     clients_a_lire = []
     wlist = 0
@@ -43,9 +45,11 @@ while serveur_lance: #Boucle principale
                 clients_connectes.remove(client)
                 client.close()
             else:
+                for utilisateur in utilisateurs:
+                    if utilisateur[1] == client:
+                        emetteur = utilisateur[0]
                 # Peut planter si le message contient des caractères spéciaux
-                msg_recu = msg_recu.decode() + "\n"
-                print("Reçu ",msg_recu)
+                msg_recu = "<"+emetteur+"> : " + msg_recu.decode() + "\n"
                 for receveur in clients_connectes:
                     receveur.send(msg_recu.encode())
 
