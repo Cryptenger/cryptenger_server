@@ -44,11 +44,10 @@ while serveur_lance: #Boucle principale
                 client.close()
             else:
                 # Peut planter si le message contient des caractères spéciaux
-                msg_recu = msg_recu.decode()
+                msg_recu = msg_recu.decode() + "\n"
                 print("Reçu ",msg_recu)
                 for receveur in clients_connectes:
-                    if receveur != client:
-                        receveur.send(msg_recu.encode())
+                    receveur.send(msg_recu.encode())
 
                 if msg_recu == "fin":
                     clients_connectes.remove(client)
