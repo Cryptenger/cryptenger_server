@@ -1,67 +1,67 @@
 import socket #Permet les connexions
 import select #Permet d'accepter plusieurs connexions
 
-hote = ''
+host = ''
 port = 25565
 
-# On définit le socket pour une connexion TCP
-connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# On situe la connexion du serveur
-connexion_principale.bind((hote, port))
+# On définit le socket pour une connection TCP
+main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# On situe la connection du serveur
+main_connection.bind((host, port))
 # On permet au serveur de refuser un maximum de 5 connexions
-connexion_principale.listen(5)
+main_connection.listen(5)
 
 print("Le serveur écoute sur le port", port)
 
-serveur_lance = True
-clients_connectes = []
-utilisateurs = []
-historique = ''
+server_live = True
+connected_users = []
+user_list = []
+History = ''
 
-while serveur_lance: #Boucle principale
+while server_live: #Boucle principale
 
     # Check si de nouveaux clients veulent se connecter
-    connexions_demandees, wlist, xlist = select.select([connexion_principale], [], [], 0.05)
+    connection_attempts, wlist, xlist = select.select([main_connection], [], [], 0.05)
     
-    for connexion in connexions_demandees:
-        connexion_avec_client, infos_connexion = connexion_principale.accept()
-        clients_connectes.append(connexion_avec_client)
-        utilisateurs.append(["unnamed", infos_connexion[0], connexion_avec_client])
-        connexion_avec_client.send(historique.encode())
+    for connection in connection_attempts:
+        client_connection, connection_data = main_connection.accept()
+        connected_users.append(client_connection)
+        user_list.append(["unnamed", connection_data[0], client_connection])
+        client_connection.send(History.encode())
     
-    clients_a_lire = []
+    to_read = []
     wlist = 0
     xlist = 0
     
     try:
-        clients_a_lire, wlist, xlist = select.select(clients_connectes, [], [], 0.05)
+        to_read, wlist, xlist = select.select(connected_users, [], [], 0.05)
     except select.error:
         pass
     else:
         
-        for client in clients_a_lire:
+        for client in to_read:
             try:
                 # Client est de type socket
-                msg_recu = client.recv(1024).decode()
+                message = client.recv(1024).decode()
             except:
-                clients_connectes.remove(client)
+                connected_users.remove(client)
                 client.close()
             else:
-                for utilisateur in utilisateurs:
-                    if utilisateur[2] == client:
-                        emetteur = utilisateur[0]
-                        if msg_recu.startswith("/name "):
-                            utilisateur[0] = msg_recu.replace("/name ", '')
+                for user in user_list:
+                    if user[2] == client:
+                        emetteur = user[0]
+                        if message.startswith("/name "):
+                            user[0] = message.replace("/name ", '')
 
                 # Peut planter si le message contient des caractères spéciaux
-                if not msg_recu.startswith("/"):
-                    msg_recu = "<"+emetteur+"> : " + msg_recu + "\n"
-                    historique = historique + msg_recu
-                    for receveur in clients_connectes:
-                        receveur.send(msg_recu.encode())
+                if not message.startswith("/"):
+                    message = "<"+emetteur+"> : " + message + "\n"
+                    History = History + message
+                    for receiver in connected_users:
+                        receiver.send(message.encode())
 
-print("Fermeture de la connexion")
-for client in clients_connectes:
+print("Fermeture de la connection")
+for client in connected_users:
     client.close()  
 
-connexion_principale.close()
+main_connection.close()
