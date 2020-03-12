@@ -16,6 +16,7 @@ print("Le serveur écoute sur le port", port)
 serveur_lance = True
 clients_connectes = []
 utilisateurs = []
+historique = ''
 
 while serveur_lance: #Boucle principale
 
@@ -25,7 +26,8 @@ while serveur_lance: #Boucle principale
     for connexion in connexions_demandees:
         connexion_avec_client, infos_connexion = connexion_principale.accept()
         clients_connectes.append(connexion_avec_client)
-        utilisateurs.append([infos_connexion[0], connexion_avec_client])
+        utilisateurs.append(["unnamed", infos_connexion[0], connexion_avec_client])
+        connexion_avec_client.send(historique.encode())
     
     clients_a_lire = []
     wlist = 0
@@ -40,22 +42,23 @@ while serveur_lance: #Boucle principale
         for client in clients_a_lire:
             try:
                 # Client est de type socket
-                msg_recu = client.recv(1024)
+                msg_recu = client.recv(1024).decode()
             except:
                 clients_connectes.remove(client)
                 client.close()
             else:
                 for utilisateur in utilisateurs:
-                    if utilisateur[1] == client:
+                    if utilisateur[2] == client:
                         emetteur = utilisateur[0]
-                # Peut planter si le message contient des caractères spéciaux
-                msg_recu = "<"+emetteur+"> : " + msg_recu.decode() + "\n"
-                for receveur in clients_connectes:
-                    receveur.send(msg_recu.encode())
+                        if msg_recu.startswith("/name "):
+                            utilisateur[0] = msg_recu.replace("/name ", '')
 
-                if msg_recu == "fin":
-                    clients_connectes.remove(client)
-                    client.close()
+                # Peut planter si le message contient des caractères spéciaux
+                if not msg_recu.startswith("/"):
+                    msg_recu = "<"+emetteur+"> : " + msg_recu + "\n"
+                    historique = historique + msg_recu
+                    for receveur in clients_connectes:
+                        receveur.send(msg_recu.encode())
 
 print("Fermeture de la connexion")
 for client in clients_connectes:
