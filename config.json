@@ -1,0 +1,14 @@
+{
+    "channels": [
+        {
+            "name": "salon1"
+        },
+        {
+            "name": "salon2"
+        },
+        {
+            "name": "salon3"
+        }
+    ],
+    "port": 25565
+}

@@ -1,15 +1,17 @@
 import socket #Permet les connexions
 import select #Permet d'accepter plusieurs connexions
+import json #pour ouvrir le json
 
 host = ''
-port = 25565
-channels = ['general']
-add_channel = ''
+channels = []
 
-while add_channel != 'end':
-    add_channel = input("Entrez le nom d'un nouveau canal (ou end si vous les avez tous donnés).")
-    if add_channel != 'end':
-        channels.append(add_channel)
+with open("config.json") as file:
+    json_data = json.load(file)
+
+port =json_data['port']
+
+for item in json_data['channels']:
+    channels.append(item['name'])
 
 
 # On définit le socket pour une connection TCP
