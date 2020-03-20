@@ -3,6 +3,14 @@ import select #Permet d'accepter plusieurs connexions
 
 host = ''
 port = 25565
+channels = ['general']
+add_channel = ''
+
+while add_channel != 'end':
+    add_channel = input("Entrez le nom d'un nouveau canal (ou end si vous les avez tous donnés).")
+    if add_channel != 'end':
+        channels.append(add_channel)
+
 
 # On définit le socket pour une connection TCP
 main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,6 +35,7 @@ while server_live: #Boucle principale
         client_connection, connection_data = main_connection.accept()
         connected_users.append(client_connection)
         user_list.append(["unnamed", connection_data[0], client_connection])
+        client_connection.send(str(channels).encode())
         client_connection.send(History.encode())
     
     to_read = []
