@@ -33,25 +33,26 @@ while server_live: #Boucle principale
 
     # Check si de nouveaux clients veulent se connecter
     connection_attempts, wlist, xlist = select.select([main_connection], [], [], 0.05)
-    
+
     for connection in connection_attempts:
         client_connection, connection_data = main_connection.accept()
         connected_users.append(client_connection)
         user_list.append(["unnamed", connection_data[0], client_connection])
         first_message = "<server_msg>" + str(channels) + "</server_msg>" +"\n"
         client_connection.send(first_message.encode())
-        client_connection.send(History.encode())
-    
+        History_message = "<history>" + History + "</history>" + "\n"
+        client_connection.send(History_message.encode())
+
     to_read = []
     wlist = 0
     xlist = 0
-    
+
     try:
         to_read, wlist, xlist = select.select(connected_users, [], [], 0.05)
     except select.error:
         pass
     else:
-        
+
         for client in to_read:
             try:
                 # Client est de type socket
@@ -75,6 +76,6 @@ while server_live: #Boucle principale
 
 print("Fermeture de la connection")
 for client in connected_users:
-    client.close()  
+    client.close()
 
 main_connection.close()
