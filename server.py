@@ -38,7 +38,7 @@ while server_live: #Boucle principale
         client_connection, connection_data = main_connection.accept()
         connected_users.append(client_connection)
         user_list.append(["unnamed", connection_data[0], client_connection])
-        first_message = str(channels) + "\n"
+        first_message = "<server_msg>" + str(channels) + "</server_msg>" +"\n"
         client_connection.send(first_message.encode())
         client_connection.send(History.encode())
     
