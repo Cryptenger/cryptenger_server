@@ -1,6 +1,7 @@
 import socket #Permet les connexions
 import select #Permet d'accepter plusieurs connexions
 import json #pour ouvrir le json
+import time
 
 host = ''
 channels = []
@@ -37,7 +38,9 @@ while server_live: #Boucle principale
         client_connection, connection_data = main_connection.accept()
         connected_users.append(client_connection)
         user_list.append(["unnamed", connection_data[0], client_connection])
-        client_connection.send(str(channels).encode())
+        first_message = str(channels) + "\n"
+        client_connection.send(first_message.encode())
+        time.sleep(0.5)
         client_connection.send(History.encode())
     
     to_read = []
