@@ -4,15 +4,17 @@ import json #pour ouvrir le json
 import time
 
 host = ''
-channels = []
+channels = {"channelList": []}                                                  #j'ai besoin que le message soit un dictionnaire portant le nom du type de message
 
 with open("config.json") as file:
-    json_data = json.load(file)
+    json_data = json.load(file)     #converti JSON en PYTHON
 
 port =json_data['port']
 
 for item in json_data['channels']:
-    channels.append(item['name'])
+    channels["channelList"].append(item['name'])
+
+channels = json.dumps(channels) #je converti le message en javascript
 
 
 # On définit le socket pour une connection TCP
@@ -27,7 +29,7 @@ print("Le serveur écoute sur le port", port)
 server_live = True
 connected_users = []
 user_list = []
-History = ''
+History = []
 
 while server_live: #Boucle principale
 
@@ -38,10 +40,17 @@ while server_live: #Boucle principale
         client_connection, connection_data = main_connection.accept()
         connected_users.append(client_connection)
         user_list.append(["unnamed", connection_data[0], client_connection])
-        first_message = "<server_msg>" + str(channels) + "</server_msg>" +"\n"
-        client_connection.send(first_message.encode())
-        History_message = "<history>" + History + "</history>" + "\n"
-        client_connection.send(History_message.encode())
+        #channels
+
+
+        # client_connection.send(channels.encode())
+        #history
+        History_message = {"history": History}                                  #j'ai besoin que le message soit un dictionnaire portant le nom du type de message
+        # History_message = str(History_message)
+        History_message = json.dumps(History_message)
+
+        # client_connection.send(History_message.encode())
+        client_connection.send(str(str(channels)+"<KTN>"+History_message).encode())
 
     to_read = []
     wlist = 0
@@ -69,8 +78,8 @@ while server_live: #Boucle principale
 
                 # Peut planter si le message contient des caractères spéciaux
                 if not message.startswith("/"):
-                    message = "<"+emetteur+"> : " + message + "\n"
-                    History = History + message
+                    # message = "<"+emetteur+"> : " + message + "\n"
+                    History.append(message)
                     for receiver in connected_users:
                         receiver.send(message.encode())
 
