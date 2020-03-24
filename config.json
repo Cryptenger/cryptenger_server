@@ -1,13 +1,16 @@
 {
     "channels": [
         {
-            "name": "salon1"
+            "name": "General"
         },
         {
-            "name": "salon2"
+            "name": "Presentation"
         },
         {
-            "name": "salon3"
+            "name": "Infos"
+        },
+        {
+            "name": "memes"
         }
     ],
     "port": 25565
