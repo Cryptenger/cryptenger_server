@@ -70,16 +70,12 @@ while server_live: #Boucle principale
                 connected_users.remove(client)
                 client.close()
             else:
-                for user in user_list:
-                    if user[2] == client:
-                        emetteur = user[0]
-                        if message.startswith("/name "):
-                            user[0] = message.replace("/name ", '')
-
-                # Peut planter si le message contient des caractères spéciaux
-                if not message.startswith("/"):
-                    # message = "<"+emetteur+"> : " + message + "\n"
+                if message == "<Close_the_connection>":
+                    connected_users.remove(client)
+                    client.close()
+                else:
                     History.append(message)
+                    print(message)
                     for receiver in connected_users:
                         receiver.send(message.encode())
 
