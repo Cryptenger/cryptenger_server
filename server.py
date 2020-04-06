@@ -3,13 +3,21 @@ import select #Permet d'accepter plusieurs connexions
 import json #pour ouvrir le json
 import time
 
-host = ''
+import hashlib # REMOVE ME
+import uuid # REMOVE ME
+
+from crypting import Crypting
+
+crypting = Crypting()
+crypting.genServerPass()
+
 channels = {"channelList": []}                                                  #j'ai besoin que le message soit un dictionnaire portant le nom du type de message
 
 with open("config.json") as file:
     json_data = json.load(file)     #converti JSON en PYTHON
 
-port =json_data['port']
+port = json_data['port']
+host = json_data['host']
 
 for item in json_data['channels']:
     channels["channelList"].append(item['name'])
@@ -29,7 +37,7 @@ print("Le serveur écoute sur le port", port)
 server_live = True
 connected_users = []
 user_list = []
-History = []
+history = []
 
 while server_live: #Boucle principale
 
@@ -40,17 +48,33 @@ while server_live: #Boucle principale
         client_connection, connection_data = main_connection.accept()
         connected_users.append(client_connection)
         user_list.append(["unnamed", connection_data[0], client_connection])
-        #channels
+
+        userPublicKey = client_connection.recv(1024) # On récupère la clé publique envoyé par le client
+        
+        encryptedMsg = crypting.asymEncrypt(userPublicKey, crypting.server_pass)
+        client_connection.send(encryptedMsg)
+
+        
+        
+        
+        # TODO : Check password (and alias ?)
+
+        
+        
+        
+        client_connection.recv(128)# On attend une confirmation de réception
+        # Ceci à pour but d'éviter le bug suivant : Si l'on envoie 2 messages trop rapidement, ils peuvent se scinder
+        # Nous pourrions mettre un `time.sleep(0.2)` sauf que ça peut être une latence inutile pour les connexions rapides et peut être trop court pour les connexions lentes
 
 
-        # client_connection.send(channels.encode())
-        #history
-        History_message = {"history": History}                                  #j'ai besoin que le message soit un dictionnaire portant le nom du type de message
-        # History_message = str(History_message)
-        History_message = json.dumps(History_message)
-
-        # client_connection.send(History_message.encode())
-        client_connection.send(str(str(channels)+"<KTN>"+History_message).encode())
+        # Envoie des cannaux de discussion
+        client_connection.send(crypting.sym_encrypt(channels).encode())
+        client_connection.recv(128) # On attend une confirmation de réception
+        
+        # Envoie de l'historique
+        json_history = json.dumps({"history": history}) # Encodage de l'historique au format JSON
+        encrypted_history = crypting.sym_encrypt(json_history).encode() # Chiffrage de l'historique
+        client_connection.send(encrypted_history) # Envoie de l'historique au client
 
     to_read = []
     wlist = 0
@@ -74,10 +98,9 @@ while server_live: #Boucle principale
                     connected_users.remove(client)
                     client.close()
                 else:
-                    History.append(message)
-                    print(message)
+                    history.append(message)
                     for receiver in connected_users:
-                        receiver.send(message.encode())
+                        receiver.send(crypting.sym_encrypt(message).encode())
 
 print("Fermeture de la connection")
 for client in connected_users:

@@ -1,4 +1,6 @@
 {
+    "host": "",
+    "port": 25565,
     "channels": [
         {
             "name": "General"
@@ -12,6 +14,5 @@
         {
             "name": "memes"
         }
-    ],
-    "port": 25565
+    ]
 }
